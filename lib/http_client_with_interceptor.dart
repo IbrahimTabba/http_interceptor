@@ -183,7 +183,7 @@ class HttpClientWithInterceptor extends BaseClient {
     var response = await _attemptRequest(request , requestBody: body);
 
     // Intercept response
-    response = await _interceptResponse(response);
+    response = await _interceptResponse(response , requestBody: body);
 
     return response;
   }
@@ -212,7 +212,7 @@ class HttpClientWithInterceptor extends BaseClient {
       if (retryPolicy != null &&
           retryPolicy.maxRetryAttempts > _retryCount &&
           await retryPolicy.shouldAttemptRetryOnResponse(
-              ResponseData.fromHttpResponse(response))) {
+              ResponseData.fromHttpResponse(response , requestBody: requestBody))) {
         _retryCount += 1;
         return _attemptRequest(request , requestBody: requestBody);
       }
@@ -244,10 +244,10 @@ class HttpClientWithInterceptor extends BaseClient {
   }
 
   /// This internal function intercepts the response.
-  Future<Response> _interceptResponse(Response response) async {
+  Future<Response> _interceptResponse(Response response , {requestBody}) async {
     for (InterceptorContract interceptor in interceptors) {
       ResponseData responseData = await interceptor.interceptResponse(
-        data: ResponseData.fromHttpResponse(response),
+        data: ResponseData.fromHttpResponse(response , requestBody: requestBody),
       );
       response = responseData.toHttpResponse();
     }

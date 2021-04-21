@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 
@@ -12,6 +13,7 @@ class RequestData {
   Map<String, String> params;
   dynamic body;
   dynamic requestBody;
+  Uint8List get requestBodyByte => requestBody!=null ? utf8.encode("$requestBody") : null;
   Encoding encoding;
 
   RequestData({

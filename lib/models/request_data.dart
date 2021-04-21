@@ -11,6 +11,7 @@ class RequestData {
   Map<String, String> headers;
   Map<String, String> params;
   dynamic body;
+  dynamic requestBody;
   Encoding encoding;
 
   RequestData({
@@ -19,13 +20,14 @@ class RequestData {
     this.headers,
     this.params,
     this.body,
+    this.requestBody,
     this.encoding,
   })  : assert(method != null),
         assert(baseUrl != null);
 
   String get url => addParametersToStringUrl(baseUrl, params);
 
-  factory RequestData.fromHttpRequest(Request request) {
+  factory RequestData.fromHttpRequest(Request request , {requestBody}) {
     var params = Map<String, String>();
     request.url.queryParameters.forEach((key, value) {
       params[key] = value;
@@ -36,9 +38,11 @@ class RequestData {
       encoding: request.encoding,
       body: request.body,
       baseUrl: baseUrl,
+      requestBody: requestBody,
       headers: request.headers ?? <String, String>{},
       params: params ?? <String, String>{},
     );
+
   }
 
   Request toHttpRequest() {

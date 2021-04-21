@@ -180,7 +180,7 @@ class HttpClientWithInterceptor extends BaseClient {
       }
     }
 
-    var response = await _attemptRequest(request);
+    var response = await _attemptRequest(request , requestBody: body);
 
     // Intercept response
     response = await _interceptResponse(response);
@@ -198,11 +198,11 @@ class HttpClientWithInterceptor extends BaseClient {
     throw new ClientException("$message.", url);
   }
 
-  Future<Response> _attemptRequest(Request request) async {
+  Future<Response> _attemptRequest(Request request , {requestBody}) async {
     var response;
     try {
       // Intercept request
-      request = await _interceptRequest(request);
+      request = await _interceptRequest(request , requestBody: requestBody);
 
       var stream = requestTimeout == null
           ? await send(request)
@@ -214,14 +214,14 @@ class HttpClientWithInterceptor extends BaseClient {
           await retryPolicy.shouldAttemptRetryOnResponse(
               ResponseData.fromHttpResponse(response))) {
         _retryCount += 1;
-        return _attemptRequest(request);
+        return _attemptRequest(request , requestBody: requestBody);
       }
     } catch (error) {
       if (retryPolicy != null &&
           retryPolicy.maxRetryAttempts > _retryCount &&
           retryPolicy.shouldAttemptRetryOnException(error)) {
         _retryCount += 1;
-        return _attemptRequest(request);
+        return _attemptRequest(request , requestBody:requestBody);
       } else {
         rethrow;
       }
@@ -232,10 +232,10 @@ class HttpClientWithInterceptor extends BaseClient {
   }
 
   /// This internal function intercepts the request.
-  Future<Request> _interceptRequest(Request request) async {
+  Future<Request> _interceptRequest(Request request , {requestBody}) async {
     for (InterceptorContract interceptor in interceptors) {
       RequestData interceptedData = await interceptor.interceptRequest(
-        data: RequestData.fromHttpRequest(request),
+        data: RequestData.fromHttpRequest(request , requestBody: requestBody),
       );
       request = interceptedData.toHttpRequest();
     }
